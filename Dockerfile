@@ -1,27 +1,21 @@
-# Use an official OpenJDK image
-FROM openjdk:17-jdk-slim
+# Use Maven to build the app
+FROM maven:3.9.6-eclipse-temurin-17 as builder
 
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy Maven wrapper and project files
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
-
-# Make Maven wrapper executable
-RUN chmod +x mvnw
-
-# Download project dependencies
-RUN ./mvnw dependency:resolve
-
-# Copy the full project source
 COPY . .
 
-# Build the Spring Boot app
+# Grant execute permission to mvnw
+RUN chmod +x mvnw
+
+# Build the application (skip tests for faster deploys)
 RUN ./mvnw clean install -DskipTests
 
-# Expose the port your Spring Boot app runs on
-EXPOSE 8080
+# Use lightweight JDK for runtime
+FROM eclipse-temurin:17-jdk-alpine
 
-# Run the app
-CMD ["java", "-jar", "target/socialmedia-0.0.1-SNAPSHOT.jar"]
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
