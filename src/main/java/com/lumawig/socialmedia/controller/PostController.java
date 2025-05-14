@@ -63,4 +63,10 @@ public class PostController {
         postRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+        
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> deleteAllPosts() {
+    postRepository.deleteAll();
+    return ResponseEntity.noContent().build();
+}
 }
